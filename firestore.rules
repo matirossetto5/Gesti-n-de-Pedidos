@@ -1,0 +1,31 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(ownerId) {
+      return isAuthenticated() && request.auth.uid == ownerId;
+    }
+
+    // ===============================================================
+    // Colección: projects
+    // ===============================================================
+    match /projects/{projectId} {
+      allow read, write: if true;
+    }
+
+    // ===============================================================
+    // Colección: leadTimes
+    // ===============================================================
+    match /leadTimes/{leadTimeId} {
+      allow read, write: if true;
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "Datos de un proyecto de construcción",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "modelingStartDate": { "type": "string" },
+        "fabricationStartDate": { "type": "string" },
+        "mainStructureAssemblyStartDate": { "type": "string" },
+        "secondaryStructureAssemblyStartDate": { "type": "string" },
+        "roofCladdingAssemblyStartDate": { "type": "string" },
+        "sideCladdingAssemblyStartDate": { "type": "string" },
+        "platesAssemblyStartDate": { "type": "string" },
+        "dateChangeLogs": { "type": "array" }
+      },
+      "required": ["id", "code", "name", "ownerId", "createdAt"]
+    },
+    "LeadTime": {
+      "title": "LeadTime",
+      "description": "Tiempos de entrega de materiales",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "category": { "type": "string" },
+        "subCategory": { "type": "string" },
+        "leadTimeDays": { "type": "number" },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["id", "category", "leadTimeDays", "ownerId"]
+    }
+  },
+  "firestore": {
+    "/projects/{projectId}": {
+      "schema": { "$ref": "Project" },
+      "description": "Colección de proyectos"
+    },
+    "/leadTimes/{leadTimeId}": {
+      "schema": { "$ref": "LeadTime" },
+      "description": "Colección de tiempos de entrega"
+    }
+  }
+}
