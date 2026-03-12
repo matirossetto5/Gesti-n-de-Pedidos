@@ -41,7 +41,7 @@ export const ProjectList = ({
                 </thead>
                 <tbody>
                   {(historyToShow.dateChangeLogs || []).map((log, i) => (
-                    <tr key={i} className="border-b border-gray-100">
+                    <tr key={`${log.date}-${log.field}-${log.newValue}-${i}`} className="border-b border-gray-100">
                       <td className="p-2">{new Date(log.date).toLocaleDateString()}</td>
                       <td className="p-2">{log.field}</td>
                       <td className="p-2">{log.oldValue || '-'}</td>

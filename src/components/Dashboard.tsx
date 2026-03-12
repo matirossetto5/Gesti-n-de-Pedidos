@@ -267,7 +267,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ projects, allLeadTimes }) 
             <tbody>
               {filteredPendingItems.length > 0 ? (
                 filteredPendingItems.map((item, idx) => (
-                  <tr key={idx} className="border-b border-[#5A5A40]/5 dark:border-gray-700 hover:bg-[#5A5A40]/2 dark:hover:bg-gray-700 transition-colors">
+                  <tr key={`${item.projectCode}-${item.item}-${item.deadline}-${idx}`} className="border-b border-[#5A5A40]/5 dark:border-gray-700 hover:bg-[#5A5A40]/2 dark:hover:bg-gray-700 transition-colors">
                     <td className="p-4">
                       <div className="flex flex-col">
                         <span className="text-xs font-mono font-bold text-[#5A5A40] dark:text-white">{item.projectCode}</span>

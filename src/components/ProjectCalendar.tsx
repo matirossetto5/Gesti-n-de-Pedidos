@@ -255,7 +255,7 @@ export const ProjectCalendar: React.FC<ProjectCalendarProps> = ({
 
           return (
             <div 
-              key={idx} 
+              key={date ? date.toISOString() : `empty-${idx}`} 
               className={`p-2 border-r border-b border-[#003366]/5 relative transition-colors hover:bg-[#003366]/2 ${!date ? 'bg-[#f5f5f0]/30' : ''}`}
             >
               {date && (
@@ -273,7 +273,7 @@ export const ProjectCalendar: React.FC<ProjectCalendarProps> = ({
                   <div className={`mt-1 space-y-1 overflow-y-auto custom-scrollbar ${viewMode === 'month' ? 'max-h-[105px]' : 'max-h-[360px]'}`}>
                     {events.map((event, eIdx) => (
                       <div 
-                        key={eIdx} 
+                        key={`${event.projectCode}-${event.eventType}-${eIdx}`} 
                         className={`${event.color} text-[9px] text-white px-1.5 py-0.5 rounded-md truncate shadow-sm font-bold uppercase tracking-tighter`}
                         title={`${event.projectName}: ${event.eventType}`}
                       >
