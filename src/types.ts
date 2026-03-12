@@ -11,6 +11,7 @@ export interface OrderItemStatus {
   orderDate?: string;
   purchaseDeadline?: string;
   manufacturingDeadline?: string;
+  orderDeadline?: string;
 }
 
 export interface DateChangeLog {

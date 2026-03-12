@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import { AlertCircle, CheckCircle2, Clock, Download, List } from 'lucide-react';
 import { calculateDeadline } from '../utils/dateUtils';
+import { ProgressBar } from './ProgressBar';
 
 interface DashboardProps {
   projects: Project[];
@@ -14,6 +15,7 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ projects, allLeadTimes }) => {
   const [filterProjectId, setFilterProjectId] = useState('all');
+  const [filterItem, setFilterItem] = useState('');
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
 
@@ -54,7 +56,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ projects, allLeadTimes }) 
         fullName: project.name,
         aplicados: projectApplied,
         pedidos: projectOrdered,
-        pendientes: projectApplied - projectOrdered
+        pendientes: projectApplied - projectOrdered,
+        progress: projectApplied > 0 ? (projectOrdered / projectApplied) * 100 : 0
       });
     });
 
@@ -78,20 +81,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ projects, allLeadTimes }) 
   const filteredPendingItems = useMemo(() => {
     return stats.pendingItems.filter(item => {
       const matchesProject = filterProjectId === 'all' || item.projectCode === filterProjectId;
+      const matchesItem = !filterItem || item.item.toLowerCase().includes(filterItem.toLowerCase());
       
       const itemDate = item.deadline !== 'Sin fecha' ? new Date(item.deadline) : null;
       const matchesStartDate = !filterStartDate || (itemDate && itemDate >= new Date(filterStartDate));
       const matchesEndDate = !filterEndDate || (itemDate && itemDate <= new Date(filterEndDate));
       
-      return matchesProject && matchesStartDate && matchesEndDate;
+      return matchesProject && matchesItem && matchesStartDate && matchesEndDate;
     });
-  }, [stats.pendingItems, filterProjectId, filterStartDate, filterEndDate]);
+  }, [stats.pendingItems, filterProjectId, filterItem, filterStartDate, filterEndDate]);
 
   const getAvailableTimeColor = (days: number | null) => {
-    if (days === null) return 'text-[#003366]/40';
-    if (days > 3) return 'text-emerald-600';
-    if (days >= 1) return 'text-yellow-600';
-    return 'text-red-600';
+    if (days === null) return 'text-[#003366]/40 dark:text-gray-400';
+    if (days > 3) return 'text-emerald-600 dark:text-emerald-400';
+    if (days >= 1) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
   const exportToPDF = async (elementId: string, filename: string) => {
@@ -115,43 +119,59 @@ export const Dashboard: React.FC<DashboardProps> = ({ projects, allLeadTimes }) 
     <div className="space-y-8 pb-12">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-3xl border border-[#003366]/10 shadow-sm flex items-center gap-4">
-          <div className="p-4 bg-[#003366]/5 text-[#003366] rounded-2xl">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-[#003366]/10 dark:border-gray-700 shadow-sm flex items-center gap-4">
+          <div className="p-4 bg-[#003366]/5 dark:bg-gray-700 text-[#003366] dark:text-blue-400 rounded-2xl">
             <List size={24} />
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-[#003366]/60 font-bold">Total Aplicados</p>
-            <p className="text-2xl font-mono font-bold text-[#003366]">{stats.totalApplied}</p>
+            <p className="text-[10px] uppercase tracking-widest text-[#003366]/60 dark:text-gray-400 font-bold">Total Aplicados</p>
+            <p className="text-2xl font-mono font-bold text-[#003366] dark:text-white">{stats.totalApplied}</p>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-3xl border border-[#003366]/10 shadow-sm flex items-center gap-4">
-          <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-[#003366]/10 dark:border-gray-700 shadow-sm flex items-center gap-4">
+          <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-2xl">
             <CheckCircle2 size={24} />
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-[#003366]/60 font-bold">Pedidos Realizados</p>
-            <p className="text-2xl font-mono font-bold text-emerald-600">{stats.totalOrdered}</p>
+            <p className="text-[10px] uppercase tracking-widest text-[#003366]/60 dark:text-gray-400 font-bold">Pedidos Realizados</p>
+            <p className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">{stats.totalOrdered}</p>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-3xl border border-[#003366]/10 shadow-sm flex items-center gap-4">
-          <div className="p-4 bg-red-50 text-red-600 rounded-2xl">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-[#003366]/10 dark:border-gray-700 shadow-sm flex items-center gap-4">
+          <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl">
             <AlertCircle size={24} />
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-[#003366]/60 font-bold">Pedidos Pendientes</p>
-            <p className="text-2xl font-mono font-bold text-red-600">{stats.totalPending}</p>
+            <p className="text-[10px] uppercase tracking-widest text-[#003366]/60 dark:text-gray-400 font-bold">Pedidos Pendientes</p>
+            <p className="text-2xl font-mono font-bold text-red-600 dark:text-red-400">{stats.totalPending}</p>
           </div>
+        </div>
+      </div>
+
+      {/* Progress Section */}
+      <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl border border-[#003366]/10 dark:border-gray-700 shadow-sm">
+        <h3 className="text-lg font-serif italic text-[#003366] dark:text-white mb-6">Progreso por Proyecto</h3>
+        <div className="space-y-4">
+          {stats.projectStats.map(p => (
+            <div key={p.name}>
+              <div className="flex justify-between text-xs mb-1 dark:text-gray-300">
+                <span className="font-bold">{p.name} - {p.fullName}</span>
+                <span>{Math.round(p.progress)}%</span>
+              </div>
+              <ProgressBar progress={p.progress} />
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Charts Section */}
       <div id="dashboard-charts" className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-8 rounded-3xl border border-[#003366]/10 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl border border-[#003366]/10 dark:border-gray-700 shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-serif italic text-[#003366]">Estado Global de Pedidos</h3>
+            <h3 className="text-lg font-serif italic text-[#003366] dark:text-white">Estado Global de Pedidos</h3>
             <button 
               onClick={() => exportToPDF('dashboard-charts', 'dashboard-graficos')}
-              className="p-2 hover:bg-[#003366]/5 rounded-xl transition-colors text-[#003366]/60"
+              className="p-2 hover:bg-[#003366]/5 dark:hover:bg-gray-700 rounded-xl transition-colors text-[#003366]/60 dark:text-gray-400"
               title="Exportar Gráficos"
             >
               <Download size={18} />
@@ -180,8 +200,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ projects, allLeadTimes }) 
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl border border-[#003366]/10 shadow-sm">
-          <h3 className="text-lg font-serif italic text-[#003366] mb-6">Pedidos por Proyecto</h3>
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl border border-[#003366]/10 dark:border-gray-700 shadow-sm">
+          <h3 className="text-lg font-serif italic text-[#003366] dark:text-white mb-6">Pedidos por Proyecto</h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stats.projectStats}>
@@ -199,27 +219,34 @@ export const Dashboard: React.FC<DashboardProps> = ({ projects, allLeadTimes }) 
       </div>
 
       {/* Pending List Section */}
-      <div id="pending-list" className="bg-white rounded-3xl border border-[#5A5A40]/10 shadow-sm overflow-hidden">
-        <div className="p-8 border-b border-[#5A5A40]/10 bg-[#5A5A40]/5">
+      <div id="pending-list" className="bg-white dark:bg-gray-800 rounded-3xl border border-[#5A5A40]/10 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="p-8 border-b border-[#5A5A40]/10 dark:border-gray-700 bg-[#5A5A40]/5 dark:bg-gray-900">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
-              <h3 className="text-xl font-serif italic text-[#5A5A40]">Lista de Pedidos Pendientes</h3>
-              <p className="text-[10px] uppercase tracking-widest text-[#5A5A40]/60 font-bold">Ordenados por fecha límite</p>
+              <h3 className="text-xl font-serif italic text-[#5A5A40] dark:text-white">Lista de Pedidos Pendientes</h3>
+              <p className="text-[10px] uppercase tracking-widest text-[#5A5A40]/60 dark:text-gray-400 font-bold">Ordenados por fecha límite</p>
             </div>
             <div className="flex flex-wrap items-center gap-4">
               <select 
                 value={filterProjectId} 
                 onChange={(e) => setFilterProjectId(e.target.value)}
-                className="border border-[#5A5A40]/20 rounded-xl p-2 text-xs font-mono"
+                className="border border-[#5A5A40]/20 dark:border-gray-600 rounded-xl p-2 text-xs font-mono dark:bg-gray-700 dark:text-white"
               >
                 <option value="all">Todos los proyectos</option>
                 {projects.map(p => <option key={p.id} value={p.code}>{p.code}</option>)}
               </select>
-              <input type="date" value={filterStartDate} onChange={(e) => setFilterStartDate(e.target.value)} className="border border-[#5A5A40]/20 rounded-xl p-2 text-xs font-mono" />
-              <input type="date" value={filterEndDate} onChange={(e) => setFilterEndDate(e.target.value)} className="border border-[#5A5A40]/20 rounded-xl p-2 text-xs font-mono" />
+              <input 
+                type="text" 
+                value={filterItem} 
+                onChange={(e) => setFilterItem(e.target.value)} 
+                placeholder="Filtrar por ítem..."
+                className="border border-[#5A5A40]/20 dark:border-gray-600 rounded-xl p-2 text-xs font-mono dark:bg-gray-700 dark:text-white" 
+              />
+              <input type="date" value={filterStartDate} onChange={(e) => setFilterStartDate(e.target.value)} className="border border-[#5A5A40]/20 dark:border-gray-600 rounded-xl p-2 text-xs font-mono dark:bg-gray-700 dark:text-white" />
+              <input type="date" value={filterEndDate} onChange={(e) => setFilterEndDate(e.target.value)} className="border border-[#5A5A40]/20 dark:border-gray-600 rounded-xl p-2 text-xs font-mono dark:bg-gray-700 dark:text-white" />
               <button 
                 onClick={() => exportToPDF('pending-list', 'pedidos-pendientes')}
-                className="flex items-center gap-2 px-4 py-2 bg-[#5A5A40] text-white rounded-xl text-xs font-bold shadow-lg hover:bg-[#5A5A40]/90 transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-[#5A5A40] dark:bg-gray-700 text-white rounded-xl text-xs font-bold shadow-lg hover:bg-[#5A5A40]/90 transition-all"
               >
                 <Download size={16} />
                 EXPORTAR PDF
@@ -230,7 +257,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ projects, allLeadTimes }) 
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="text-[#5A5A40] text-[10px] uppercase tracking-widest border-b border-[#5A5A40]/10">
+              <tr className="text-[#5A5A40] dark:text-gray-300 text-[10px] uppercase tracking-widest border-b border-[#5A5A40]/10 dark:border-gray-700">
                 <th className="p-4 text-left font-bold">Proyecto</th>
                 <th className="p-4 text-left font-bold">Material / Categoría</th>
                 <th className="p-4 text-center font-bold">Fecha Límite</th>
@@ -240,19 +267,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ projects, allLeadTimes }) 
             <tbody>
               {filteredPendingItems.length > 0 ? (
                 filteredPendingItems.map((item, idx) => (
-                  <tr key={idx} className="border-b border-[#5A5A40]/5 hover:bg-[#5A5A40]/2 transition-colors">
+                  <tr key={idx} className="border-b border-[#5A5A40]/5 dark:border-gray-700 hover:bg-[#5A5A40]/2 dark:hover:bg-gray-700 transition-colors">
                     <td className="p-4">
                       <div className="flex flex-col">
-                        <span className="text-xs font-mono font-bold text-[#5A5A40]">{item.projectCode}</span>
-                        <span className="text-[10px] text-[#5A5A40]/60">{item.projectName}</span>
+                        <span className="text-xs font-mono font-bold text-[#5A5A40] dark:text-white">{item.projectCode}</span>
+                        <span className="text-[10px] text-[#5A5A40]/60 dark:text-gray-400">{item.projectName}</span>
                       </div>
                     </td>
-                    <td className="p-4 text-sm font-mono text-[#5A5A40]">
+                    <td className="p-4 text-sm font-mono text-[#5A5A40] dark:text-gray-300">
                       {item.item}
                     </td>
                     <td className="p-4 text-center">
                       <div className="flex flex-col items-center">
-                        <span className="text-xs font-mono text-[#5A5A40]">{item.deadline}</span>
+                        <span className="text-xs font-mono text-[#5A5A40] dark:text-gray-300">{item.deadline}</span>
                         {item.daysLeft !== null && (
                           <span className={`text-[9px] font-bold uppercase ${getAvailableTimeColor(item.daysLeft)}`}>
                             {item.daysLeft < 0 ? `Vencido (${Math.abs(item.daysLeft)}d)` : `${item.daysLeft} días restantes`}
@@ -261,7 +288,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ projects, allLeadTimes }) 
                       </div>
                     </td>
                     <td className="p-4 text-center">
-                      <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-red-50 text-red-600 rounded-lg text-[9px] font-bold uppercase">
+                      <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-[9px] font-bold uppercase">
                         <Clock size={10} />
                         Pendiente
                       </div>
@@ -270,7 +297,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ projects, allLeadTimes }) 
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="p-12 text-center text-[#5A5A40]/40 font-serif italic">
+                  <td colSpan={4} className="p-12 text-center text-[#5A5A40]/40 dark:text-gray-500 font-serif italic">
                     No hay pedidos pendientes que coincidan con los filtros.
                   </td>
                 </tr>
