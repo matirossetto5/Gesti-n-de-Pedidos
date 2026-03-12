@@ -35,7 +35,7 @@ function AppContent() {
       if (savedProjects && savedProjects !== "undefined" && user) {
         const projects: Project[] = JSON.parse(savedProjects);
         for (const project of projects) {
-          await saveProject({ ...project, ownerId: user.uid });
+          await saveProject({ ...project });
         }
         localStorage.removeItem('projects');
       }
@@ -43,7 +43,7 @@ function AppContent() {
       if (savedLeadTimes && savedLeadTimes !== "undefined" && user) {
         const leadTimes: MaterialLeadTime[] = JSON.parse(savedLeadTimes);
         for (const lt of leadTimes) {
-          await updateLeadTime({ ...lt, ownerId: user.uid });
+          await updateLeadTime({ ...lt });
         }
         localStorage.removeItem('leadTimes');
       }

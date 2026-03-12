@@ -60,7 +60,6 @@ export const ProjectForm = ({
         id: initialProject?.id || Date.now().toString(),
         code,
         name,
-        ownerId: initialProject?.ownerId || user?.uid || '',
         responsibleName,
         createdAt: initialProject?.createdAt || new Date().toISOString(),
         modelingStartDate,

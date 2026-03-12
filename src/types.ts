@@ -28,7 +28,7 @@ export interface Project {
   code: string;
   name: string;
   description?: string;
-  ownerId: string;
+  ownerId?: string;
   responsibleName: string;
   createdAt: string;
   modelingStartDate?: string;
@@ -58,5 +58,5 @@ export interface MaterialLeadTime {
   leadTimeDays: number;
   purchaseTimeDays: number;
   manufacturingTimeDays: number;
-  ownerId: string;
+  ownerId?: string;
 }

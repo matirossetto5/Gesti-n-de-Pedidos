@@ -23,37 +23,36 @@ export const useFirestoreData = (user: any) => {
     setLoading(true);
     setError(null);
 
-    // Consulta filtrada por ownerId
-    const projectsQuery = query(collection(db, 'projects'), where('ownerId', '==', user.uid));
+    // Consulta sin filtrar por ownerId
+    const projectsQuery = query(collection(db, 'projects'));
     const unsubscribeProjects = onSnapshot(projectsQuery, (snapshot) => {
+      console.log("Projects snapshot size:", snapshot.size);
       const projectsData = snapshot.docs.map(doc => {
         const data = doc.data();
+        console.log("Project doc:", doc.id, data);
         return { id: doc.id, ...data } as Project;
       });
       setProjects(projectsData);
       setLoading(false);
     }, (err) => {
-      console.error("Error loading projects:", err);
+      console.error("Error fetching projects:", err);
+      handleFirestoreError(err, OperationType.LIST, 'projects', auth);
       setError(err.message);
       setLoading(false);
     });
 
-    const leadTimesQuery = query(collection(db, 'leadTimes'), where('ownerId', '==', user.uid));
+    const leadTimesQuery = query(collection(db, 'leadTimes'));
     const unsubscribeLeadTimes = onSnapshot(leadTimesQuery, async (snapshot) => {
+      console.log("LeadTimes snapshot size:", snapshot.size);
       if (snapshot.empty) {
-        // Initialize default lead times for new user
-        for (const item of INITIAL_LEAD_TIMES) {
-          const id = crypto.randomUUID();
-          await setDoc(doc(db, 'leadTimes', id), { 
-            ...item, 
-            id, 
-            ownerId: user.uid,
-            leadTimeDays: 15 // Default value
-          });
-        }
+        console.log("LeadTimes snapshot is empty");
         return;
       }
-      const leadTimesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MaterialLeadTime));
+      const leadTimesData = snapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log("LeadTime doc:", doc.id, data);
+        return { id: doc.id, ...data } as MaterialLeadTime;
+      });
       
       // Deduplicate based on category and subCategory
       const uniqueLeadTimes = leadTimesData.filter((lt, index, self) =>
@@ -76,7 +75,7 @@ export const useFirestoreData = (user: any) => {
       
       setLeadTimes(uniqueLeadTimes);
     }, (err) => {
-      console.error("Error loading lead times:", err);
+      handleFirestoreError(err, OperationType.LIST, 'leadTimes', auth);
     });
 
     return () => {
